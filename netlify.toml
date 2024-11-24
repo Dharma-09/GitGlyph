@@ -1,0 +1,11 @@
+[build]
+  functions = "functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Optional: Add headers for your API functions
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
