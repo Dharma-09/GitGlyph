@@ -1,6 +1,9 @@
 # GitGlyph
 [![Netlify Status](https://api.netlify.com/api/v1/badges/9ab4ddfc-9591-456e-aff5-75167167d0cf/deploy-status)](https://app.netlify.com/sites/gitglyph/deploys)
-
+[![GitHub stars](https://img.shields.io/github/stars/Dharma-09/GitGlyph)](https://github.com/Dharma-09/GitGlyph/stargazers)
+![Last Commit](https://img.shields.io/github/last-commit/Dharma-09/GitGlyph)
+![Pull Requests](https://img.shields.io/github/issues-pr-raw/Dharma-09/GitGlyph)
+[![License](https://img.shields.io/github/license/Dharma-09/GitGlyph)](https://github.com/Dharma-09/GitGlyph/blob/master/LICENSE)
 
 GitGlyph is a Go-based application that tracks GitHub issues in real-time based on specified repositories and labels. Users can provide access tokens for seamless tracking of public and private repositories without requiring webhook setups.
 
