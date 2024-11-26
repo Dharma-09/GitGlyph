@@ -30,10 +30,12 @@ GitGlyph is a tool to track issues in any GitHub repository with a specific labe
 ### Setup Instructions
 
 1. **Fork this Repository**
+
    - Click the "Fork" button at the top-right of this page to create your own copy of this repository.
 OR
 1. **Clone the Repository**
-   ```bash
+
+   ```git
    git clone https://github.com/<your-username>/GitGlyph.git
    cd GitGlyph
    ```
@@ -53,6 +55,6 @@ OR
     ```
 3. Run the Application
 
-    ```bash
+    ```go
     go run main.go
     ```
