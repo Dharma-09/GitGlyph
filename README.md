@@ -5,30 +5,54 @@
 ![Pull Requests](https://img.shields.io/github/issues-pr-raw/Dharma-09/GitGlyph)
 [![License](https://img.shields.io/github/license/Dharma-09/GitGlyph)](https://github.com/Dharma-09/GitGlyph/blob/master/LICENSE)
 
-GitGlyph is a Go-based application that tracks GitHub issues in real-time based on specified repositories and labels. Users can provide access tokens for seamless tracking of public and private repositories without requiring webhook setups.
+# GitGlyph
 
-## Features  
-- **Real-time Issue Tracking**: Dynamically fetch GitHub issues based on repository and label.  
-- **Secure Access**: Utilize personal access tokens to authenticate and fetch data securely.  
-- **Custom Filters**: Specify target repositories and labels for focused tracking.  
-- **GraphQL Integration**: Uses the GitHub GraphQL API for efficient and flexible data queries.  
+GitGlyph is a tool to track issues in any GitHub repository with a specific label. It sends notifications whenever a new issue with the specified label is detected.
 
 ---
 
-## Prerequisites  
-Ensure you have the following installed:  
-1. [Go](https://go.dev/dl/) (version 1.20 or higher)  
-2. A [GitHub Personal Access Token](https://github.com/settings/tokens) with the `repo` and `read:org` permissions.  
-3. A terminal or code editor to run Go programs.  
+## Features
+- Track issues in any GitHub repository by specifying the repository and label.
+- Notifications are sent to a specified email address (e.g., via SMTP).
+- Easy setup with environment variables.
 
 ---
 
-## Installation  
+## Getting Started
 
-1. **Clone the Repository**:  
+### Prerequisites
+- Go (1.20 or later)
+- A GitHub Personal Access Token with `repo` and `read:org` permissions.
+- An SMTP server (e.g., Gmail) for notifications (optional).
+
+---
+
+### Setup Instructions
+
+1. **Fork this Repository**
+   - Click the "Fork" button at the top-right of this page to create your own copy of this repository.
+OR
+1. **Clone the Repository**
    ```bash
-   git clone https://github.com/Dharma-09/gitglyph.git
-   cd gitglyph
-
-   go run main.go
+   git clone https://github.com/<your-username>/GitGlyph.git
+   cd GitGlyph
    ```
+2. **Configure Environment Variables**
+
+    Copy the .env.example file to .env:
+    ```bash
+    cp .env.example .env
+    ```
+    Edit the .env file with your preferred values:
+    ```plaintext
+    GITHUB_TOKEN=your_personal_access_token
+    TARGET_REPO_OWNER=target_repo_owner
+    TARGET_REPO_NAME=target_repo_name
+    LABEL_TO_TRACK=label_to_track
+    NOTIFICATION_EMAIL=your_email@example.com
+    ```
+3. Run the Application
+
+    ```bash
+    go run main.go
+    ```
