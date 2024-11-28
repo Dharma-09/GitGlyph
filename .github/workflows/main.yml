@@ -1,0 +1,21 @@
+name: Notify New Issues
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Send Notification
+      env:
+        GITHUB_REPO: ${{ github.repository }}
+        ISSUE_TITLE: ${{ github.event.issue.title }}
+        ISSUE_URL: ${{ github.event.issue.html_url }}
+      run: |
+        curl -X POST -H 'Content-type: application/json' \
+        --data "{
+          \"text\": \"🚨 *New Issue Created in $GITHUB_REPO* 🚨\n\n*Title:* $ISSUE_TITLE\n*URL:* $ISSUE_URL\"
+        }" $SLACK_WEBHOOK_URL
