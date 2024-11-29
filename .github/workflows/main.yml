@@ -1,34 +1,34 @@
 name: Track External Repository Issues
 
-on:
-  schedule:
-    - cron: "*/1440 * * * *" # Run every 15 minutes
-  workflow_dispatch: # Allows you to trigger the workflow manually
+#on:
+ # schedule:
+  #  - cron: "*/1440 * * * *" # Run every 15 minutes
+  #workflow_dispatch: # Allows you to trigger the workflow manually
 
-jobs:
-  track-issues:
-    runs-on: ubuntu-latest
+#jobs:
+ # track-issues:
+  #  runs-on: ubuntu-latest
 
-    steps:
-    - name: Query Issues from External Repo
-      env:
-        GITHUB_PAT: ${{ secrets.GITH_TOKEN }}
-        TARGET_OWNER: "Dharma-09"          # Replace with the owner of the repo you want to track
-        TARGET_REPO: "Arjun"           # Replace with the repo name
-        LABEL: "good-first-issue"           # Replace with the label you want to track
-      run: |
+#    steps:
+ #   - name: Query Issues from External Repo
+  #    env:
+   #     GITHUB_PAT: ${{ secrets.GITH_TOKEN }}
+    #    TARGET_OWNER: "Dharma-09"          # Replace with the owner of the repo you want to track
+     #   TARGET_REPO: "Arjun"           # Replace with the repo name
+      #  LABEL: "good-first-issue"           # Replace with the label you want to track
+      #run: |
         # GraphQL query to fetch issues
-        QUERY='{
-          "query": "query($owner: String!, $repo: String!, $label: String!) {
-            repository(owner: $owner, name: $repo) {
-              issues(first: 10, labels: [$label], states: OPEN) {
-                edges {
-                  node {
-                    title
-                    url
-                    createdAt
-                    author {
-                      login
+       # QUERY='{
+        #  "query": "query($owner: String!, $repo: String!, $label: String!) {
+         #   repository(owner: $owner, name: $repo) {
+          #    issues(first: 10, labels: [$label], states: OPEN) {
+           #     edges {
+            #      node {
+             #       title
+              #      url
+               #     createdAt
+                #    author {
+                 #     login
                     }
                   }
                 }
