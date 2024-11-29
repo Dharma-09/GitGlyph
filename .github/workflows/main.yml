@@ -2,7 +2,7 @@ name: Track External Repository Issues
 
 on:
   schedule:
-    - cron: "*/15 * * * *" # Run every 15 minutes
+    - cron: "*/15000 * * * *" # Run every 15 minutes
   workflow_dispatch: # Allows you to trigger the workflow manually
 
 jobs:
