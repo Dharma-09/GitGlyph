@@ -1,61 +1,42 @@
-name: Track External Repository Issues
+name: Fetch Issues and Send Notifications
 
-#on:
- # schedule:
-  #  - cron: "*/1440 * * * *" # Run every 15 minutes
-  #workflow_dispatch: # Allows you to trigger the workflow manually
+on:
+  schedule:
+    # Runs the workflow every 2 hours
+    - cron: "0 */2 * * *"
 
-#jobs:
- # track-issues:
-  #  runs-on: ubuntu-latest
+  workflow_dispatch: # Allows manual trigger of the workflow
 
-#    steps:
- #   - name: Query Issues from External Repo
-  #    env:
-   #     GITHUB_PAT: ${{ secrets.GITH_TOKEN }}
-    #    TARGET_OWNER: "Dharma-09"          # Replace with the owner of the repo you want to track
-     #   TARGET_REPO: "Arjun"           # Replace with the repo name
-      #  LABEL: "good-first-issue"           # Replace with the label you want to track
-      #run: |
-        # GraphQL query to fetch issues
-       # QUERY='{
-        #  "query": "query($owner: String!, $repo: String!, $label: String!) {
-         #   repository(owner: $owner, name: $repo) {
-          #    issues(first: 10, labels: [$label], states: OPEN) {
-           #     edges {
-            #      node {
-             #       title
-              #      url
-               #     createdAt
-                #    author {
-                 #     login
-                    }
-                  }
-                }
-              }
-            }
-          }",
-          "variables": {
-            "owner": "'"$TARGET_OWNER"'",
-            "repo": "'"$TARGET_REPO"'",
-            "label": "'"$LABEL"'"
-          }
-        }'
+jobs:
+  fetch-issues:
+    runs-on: ubuntu-latest
 
-        # Call GitHub GraphQL API
-        RESPONSE=$(curl -s -X POST -H "Authorization: Bearer $GITH_TOKEN" \
-          -H "Content-Type: application/json" \
-          -d "$QUERY" \
-          https://api.github.com/graphql)
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-        echo "GraphQL Response: $RESPONSE"
+      # Step 2: Set up Go
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.20
 
-        # Extract and format issues
-        ISSUES=$(echo "$RESPONSE" | jq -r '.data.repository.issues.edges[] | "Title: \(.node.title)\nURL: \(.node.url)\nAuthor: \(.node.author.login)\nCreated: \(.node.createdAt)\n"')
+      # Step 3: Install Dependencies
+      - name: Install dependencies
+        run: go mod tidy
 
-        if [ -z "$ISSUES" ]; then
-          echo "No new issues found with label '$LABEL' in $TARGET_OWNER/$TARGET_REPO."
-        else
-          echo -e "New Issues:\n$ISSUES"
-          # You can add a step here to send notifications (Slack, email, etc.)
-        fi
+      # Step 4: Run the Go application
+      - name: Fetch Issues and Send Notifications
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }} # Token for GitHub GraphQL API
+          EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }} # Email account username
+          WPRD_MAIL: ${{ secrets.WPRD_MAIL }} # Email account app password
+          SMTP_SERVER: "smtp.gmail.com"                # Change for your email provider
+          SMTP_PORT: "587"                             # SMTP Port
+          REPO_OWNER: "kubevirt"                       # Replace with target repo owner
+          REPO_NAME: "kubevirt"                        # Replace with target repo name
+          LABEL: "good-first-issue"                    # Replace with the desired label
+          RECEIVER_EMAIL: "receiver@example.com"       # Replace with recipient email
+        run: |
+          go run main.go
