@@ -58,7 +58,7 @@ func loadConfig() Config {
 	}
 
 	config := Config{
-		GithubToken:      os.Getenv("GITHUB_TOKEN"),
+		GithubToken:      os.Getenv("GIT_TOKEN"),
 		RepoOwner:        os.Getenv("TARGET_REPO_OWNER"),
 		RepoName:         os.Getenv("TARGET_REPO_NAME"),
 		Label:            os.Getenv("LABEL_TO_TRACK"),
