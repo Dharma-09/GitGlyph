@@ -3,11 +3,7 @@ name: Fetch Issues and Send Notifications
 on:
   schedule:
     # Runs the workflow every 2 hours
-<<<<<<< HEAD
-    - cron: "0 */2 * * *"
-=======
     - cron: "*/5 * * * *"
->>>>>>> 68545c03193d45aa9bdcc36b38e07f6f0f6ee36a
 
   workflow_dispatch: # Allows manual trigger of the workflow
 
@@ -38,16 +34,9 @@ jobs:
           WPRD_MAIL: ${{ secrets.WPRD_MAIL }} # Email account app password
           SMTP_SERVER: "smtp.gmail.com"                # Change for your email provider
           SMTP_PORT: "587"                             # SMTP Port
-<<<<<<< HEAD
-          REPO_OWNER: "kubevirt"                       # Replace with target repo owner
-          REPO_NAME: "kubevirt"                        # Replace with target repo name
-          LABEL: "good-first-issue"                    # Replace with the desired label
-          RECEIVER_EMAIL: "receiver@example.com"       # Replace with recipient email
-=======
           REPO_OWNER: "Dharma-09"                       # Replace with target repo owner
           REPO_NAME: "CI-CD-pipelines-examples"                        # Replace with target repo name
           LABEL: "good-first-issue"                    # Replace with the desired label
           RECEIVER_EMAIL: "dharmik.gangani17@gmail.com"       # Replace with recipient email
->>>>>>> 68545c03193d45aa9bdcc36b38e07f6f0f6ee36a
         run: |
           go run main.go
