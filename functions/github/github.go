@@ -11,9 +11,9 @@ import (
 
 // PostComment posts a comment to a GitHub issue
 func PostComment(issueURL, comment string) {
-	token := os.Getenv("GITHUB_TOKEN")
+	token := os.Getenv("GIT_TOKEN")
 	if token == "" {
-		log.Println("GITHUB_TOKEN not set in environment variables.")
+		log.Println("GIT_TOKEN not set in environment variables.")
 		return
 	}
 

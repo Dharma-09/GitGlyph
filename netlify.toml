@@ -9,3 +9,7 @@
   for = "/.netlify/functions/*"
   [headers.values]
     Access-Control-Allow-Origin = "*"
+    
+[[scheduled]]
+path = "/fetch-issues"
+schedule = "@hourly"

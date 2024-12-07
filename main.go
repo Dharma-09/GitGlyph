@@ -7,9 +7,10 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
-	"github.com/joho/godotenv"
 	"net/smtp"
+	"os"
+
+	"github.com/joho/godotenv"
 )
 
 type GraphQLRequest struct {
@@ -43,10 +44,10 @@ type GraphQLResponse struct {
 }
 
 type Config struct {
-	GithubToken   string
-	RepoOwner     string
-	RepoName      string
-	Label         string
+	GithubToken       string
+	RepoOwner         string
+	RepoName          string
+	Label             string
 	NotificationEmail string
 }
 
@@ -58,10 +59,10 @@ func loadConfig() Config {
 	}
 
 	config := Config{
-		GithubToken:      os.Getenv("GITHUB_TOKEN"),
-		RepoOwner:        os.Getenv("TARGET_REPO_OWNER"),
-		RepoName:         os.Getenv("TARGET_REPO_NAME"),
-		Label:            os.Getenv("LABEL_TO_TRACK"),
+		GithubToken:       os.Getenv("GITHUB_TOKEN"),
+		RepoOwner:         os.Getenv("TARGET_REPO_OWNER"),
+		RepoName:          os.Getenv("TARGET_REPO_NAME"),
+		Label:             os.Getenv("LABEL_TO_TRACK"),
 		NotificationEmail: os.Getenv("NOTIFICATION_EMAIL"),
 	}
 
@@ -92,7 +93,7 @@ func fetchIssues(repoOwner, repoName, label string, token string) ([]Issue, erro
 			}
 		}
 	`
-	
+
 	// Set up the GraphQL request body
 	reqBody := GraphQLRequest{
 		Query: query,
@@ -100,7 +101,7 @@ func fetchIssues(repoOwner, repoName, label string, token string) ([]Issue, erro
 	reqBody.Variables.RepoOwner = repoOwner
 	reqBody.Variables.RepoName = repoName
 	reqBody.Variables.Label = label
-	
+
 	// Marshal request into JSON
 	reqBytes, err := json.Marshal(reqBody)
 	if err != nil {
@@ -149,8 +150,8 @@ func sendNotification(issue Issue, recipientEmail string) error {
 	// SMTP server configuration
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"
-	senderEmail := "SENDER_MAIL" // Replace with your email
-	password := "PASSWORD_MAIL"      // Replace with your email password or app-specific password
+	senderEmail := "EMAIL_USERNAME" // Replace with your email
+	password := "PASSWORD_MAIL"     // Replace with your email password or app-specific password
 
 	// Email content
 	subject := fmt.Sprintf("New Issue: %s", issue.Title)
@@ -174,20 +175,20 @@ func sendNotification(issue Issue, recipientEmail string) error {
 }
 
 func main() {
-		// Load configuration
-		config := loadConfig()
+	// Load configuration
+	config := loadConfig()
 
-		// Fetch issues
-		issues, err := fetchIssues(config.RepoOwner, config.RepoName, config.Label, config.GithubToken)
+	// Fetch issues
+	issues, err := fetchIssues(config.RepoOwner, config.RepoName, config.Label, config.GithubToken)
+	if err != nil {
+		log.Fatalf("Error fetching issues: %v", err)
+	}
+
+	// Send notifications for each issue
+	for _, issue := range issues {
+		err := sendNotification(issue, config.NotificationEmail)
 		if err != nil {
-			log.Fatalf("Error fetching issues: %v", err)
+			log.Printf("Failed to send notification for issue %s: %v", issue.Title, err)
 		}
-	
-		// Send notifications for each issue
-		for _, issue := range issues {
-			err := sendNotification(issue, config.NotificationEmail)
-			if err != nil {
-				log.Printf("Failed to send notification for issue %s: %v", issue.Title, err)
-			}
-		}
+	}
 }
