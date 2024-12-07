@@ -3,7 +3,7 @@ name: Check Issues
 on:
   workflow_dispatch:
   schedule:
-    - cron: '*/5 * * * *' # Runs every 5 minutes
+    - cron: '*/5 * * * *'  # Runs every 5 minutes
 
 jobs:
   fetch-issues:
@@ -18,11 +18,16 @@ jobs:
         with:
           go-version: 1.20
 
+      - name: Install Dependencies
+        run: |
+          go mod tidy  # Ensures that dependencies are correctly resolved
+
       - name: Run Issue Tracker
         env:
-          REPO_OWNER: Dharma-09 # Set your target repository owner
-          REPO_NAME: CI-CD-pipelines-examples   # Set your target repository name
-          LABEL: bug           # Set the label to track
-          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+          REPO_OWNER: Dharma-09  # Set your target repository owner
+          REPO_NAME: CI-CD-pipelines-examples  # Set your target repository name
+          LABEL: bug  # Set the label to track
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}  # GitHub Token for authentication
         run: |
+          echo "Starting the Issue Tracker Script..."
           go run main.go
