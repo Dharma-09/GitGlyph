@@ -34,9 +34,9 @@ jobs:
           WPRD_MAIL: ${{ secrets.WPRD_MAIL }} # Email account app password
           SMTP_SERVER: "smtp.gmail.com"                # Change for your email provider
           SMTP_PORT: "587"                             # SMTP Port
-          REPO_OWNER: "kubevirt"                       # Replace with target repo owner
-          REPO_NAME: "kubevirt"                        # Replace with target repo name
+          REPO_OWNER: "Dharma-09"                       # Replace with target repo owner
+          REPO_NAME: "CI-CD-pipelines-examples"                        # Replace with target repo name
           LABEL: "good-first-issue"                    # Replace with the desired label
-          RECEIVER_EMAIL: "receiver@example.com"       # Replace with recipient email
+          RECEIVER_EMAIL: "dharmik.gangani17@gmail.com"       # Replace with recipient email
         run: |
           go run main.go
