@@ -1,11 +1,10 @@
 name: Fetch Issues and Send Notifications
 
 on:
+  workflow_dispatch:
   schedule:
     # Runs the workflow every 2 hours
     - cron: "*/5 * * * *"
-
-  workflow_dispatch: # Allows manual trigger of the workflow
 
 jobs:
   fetch-issues:
