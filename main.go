@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/smtp"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -31,62 +30,25 @@ type Issue struct {
 	} `json:"author"`
 }
 
-type GraphQLResponse struct {
-	Data struct {
-		Repository struct {
-			Issues struct {
-				Edges []struct {
-					Node Issue `json:"node"`
-				} `json:"edges"`
-			} `json:"issues"`
-		} `json:"repository"`
-	} `json:"data"`
-}
-
-type Config struct {
-	GithubToken       string
-	RepoOwner         string
-	RepoName          string
-	Label             string
-	NotificationEmail string
-}
-
-func loadConfig() Config {
-	// Load environment variables from .env file
+func loadEnv() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Println("No .env file found, reading environment variables from the system...")
+		log.Fatalf("Error loading .env file: %v", err)
 	}
-
-	config := Config{
-		GithubToken:       os.Getenv("GIT_TOKEN"),
-		RepoOwner:         os.Getenv("TARGET_REPO_OWNER"),
-		RepoName:          os.Getenv("TARGET_REPO_NAME"),
-		Label:             os.Getenv("LABEL_TO_TRACK"),
-		NotificationEmail: os.Getenv("NOTIFICATION_EMAIL"),
-	}
-
-	// Validate required fields
-	if config.GithubToken == "" || config.RepoOwner == "" || config.RepoName == "" || config.Label == "" {
-		log.Fatalf("Missing required configuration. Please check your .env file or environment variables.")
-	}
-
-	return config
+	
 }
 
-func fetchIssues(repoOwner, repoName, label string, token string) ([]Issue, error) {
+func fetchIssues(repoOwner, repoName, label, token string) ([]Issue, error) {
 	query := `
-		query ($repoOwner: String!, $repoName: String!, $label: String!) {
+		query($repoOwner: String!, $repoName: String!, $label: String!) {
 			repository(owner: $repoOwner, name: $repoName) {
-				issues(labels: [$label], states: OPEN, first: 10) {
-					edges {
-						node {
-							title
-							url
-							createdAt
-							author {
-								login
-							}
+				issues(first: 10, labels: [$label], states: OPEN) {
+					nodes {
+						title
+						url
+						createdAt
+						author {
+							login
 						}
 					}
 				}
@@ -94,101 +56,78 @@ func fetchIssues(repoOwner, repoName, label string, token string) ([]Issue, erro
 		}
 	`
 
-	// Set up the GraphQL request body
-	reqBody := GraphQLRequest{
+	requestBody := GraphQLRequest{
 		Query: query,
 	}
-	reqBody.Variables.RepoOwner = repoOwner
-	reqBody.Variables.RepoName = repoName
-	reqBody.Variables.Label = label
+	requestBody.Variables.RepoOwner = repoOwner
+	requestBody.Variables.RepoName = repoName
+	requestBody.Variables.Label = label
 
-	// Marshal request into JSON
-	reqBytes, err := json.Marshal(reqBody)
+	jsonBody, _ := json.Marshal(requestBody)
+
+	req, err := http.NewRequest("POST", "https://api.github.com/graphql", bytes.NewBuffer(jsonBody))
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request: %v", err)
+		return nil, err
 	}
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	req.Header.Set("Content-Type", "application/json")
 
-	// Create HTTP request with the access token in the Authorization header
-	req, err := http.NewRequest("POST", "https://api.github.com/graphql", bytes.NewReader(reqBytes))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %v", err)
-	}
-	req.Header.Add("Authorization", "Bearer "+loadConfig().GithubToken)
-	req.Header.Add("Content-Type", "application/json")
-
-	// Make the request to the GitHub GraphQL API
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send request: %v", err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 
-	// Log the entire response body for debugging purposes
-	bodyBytes, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body) // Use io.ReadAll instead of ioutil.ReadAll
 	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %v", err)
+		return nil, err
 	}
-	fmt.Println("GraphQL Response: ", string(bodyBytes)) // Add this line to debug the response
 
-	// Decode the response JSON
-	var response GraphQLResponse
-	err = json.Unmarshal(bodyBytes, &response)
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("GraphQL Response: %s", string(body))
+	}
+
+	var response struct {
+		Data struct {
+			Repository struct {
+				Issues struct {
+					Nodes []Issue `json:"nodes"`
+				} `json:"issues"`
+			} `json:"repository"`
+		} `json:"data"`
+	}
+
+	err = json.Unmarshal(body, &response)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode response: %v", err)
+		return nil, fmt.Errorf("Failed to parse JSON: %v", err)
 	}
 
-	// Extract issues from the response
-	var issues []Issue
-	for _, edge := range response.Data.Repository.Issues.Edges {
-		issues = append(issues, edge.Node)
-	}
-	return issues, nil
-}
-
-func sendNotification(issue Issue, recipientEmail string) error {
-	// SMTP server configuration
-	smtpHost := "smtp.gmail.com"
-	smtpPort := "587"
-	senderEmail := "EMAIL_USERNAME" // Replace with your email
-	password := "PASSWORD_MAIL"     // Replace with your email password or app-specific password
-
-	// Email content
-	subject := fmt.Sprintf("New Issue: %s", issue.Title)
-	body := fmt.Sprintf(
-		"New issue detected:\n\nTitle: %s\nAuthor: %s\nURL: %s\n\n",
-		issue.Title, issue.Author.Login, issue.URL,
-	)
-	message := []byte(fmt.Sprintf("Subject: %s\r\n\r\n%s", subject, body))
-
-	// Authentication
-	auth := smtp.PlainAuth("", senderEmail, password, smtpHost)
-
-	// Send the email
-	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, senderEmail, []string{recipientEmail}, message)
-	if err != nil {
-		return fmt.Errorf("failed to send email: %v", err)
-	}
-
-	fmt.Printf("Notification sent to %s for issue: %s\n", recipientEmail, issue.Title)
-	return nil
+	return response.Data.Repository.Issues.Nodes, nil
 }
 
 func main() {
-	// Load configuration
-	config := loadConfig()
+	// Load environment variables
+	loadEnv()
+
+	repoOwner := os.Getenv("REPO_OWNER")
+	repoName := os.Getenv("REPO_NAME")
+	label := os.Getenv("LABEL")
+	token := os.Getenv("GIT_TOKEN")
+
+	if repoOwner == "" || repoName == "" || label == "" || token == "" {
+		log.Fatal("Required environment variables are missing")
+	}
 
 	// Fetch issues
-	issues, err := fetchIssues(config.RepoOwner, config.RepoName, config.Label, config.GithubToken)
+	issues, err := fetchIssues(repoOwner, repoName, label, token)
 	if err != nil {
 		log.Fatalf("Error fetching issues: %v", err)
 	}
 
-	// Send notifications for each issue
+	// Display issues
 	for _, issue := range issues {
-		err := sendNotification(issue, config.NotificationEmail)
-		if err != nil {
-			log.Printf("Failed to send notification for issue %s: %v", issue.Title, err)
-		}
+		fmt.Printf("New issue: %s by %s\n", issue.Title, issue.Author.Login)
+		fmt.Printf("URL: %s\n", issue.URL)
 	}
 }
