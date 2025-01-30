@@ -33,7 +33,7 @@ type Issue struct {
 func loadEnv() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		log.Fatalf("Error loading .env file: %v", err) #load content from .env file
 	}
 	
 }
