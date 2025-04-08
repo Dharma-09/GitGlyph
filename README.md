@@ -7,7 +7,7 @@
 
 # GitGlyph
 
-GitGlyph is a tool to track issues in any GitHub repository with a specific label. It sends notifications whenever a new issue with the specified label is detected.
+GitGlyph is a tool to track issues in any GitHub repository with a specific label. It sends notifications whenever a new issue with the specified label is detected...
 
 ---
 
